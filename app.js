@@ -1,12 +1,8 @@
-import { SHADER_ATTR, ShaderUtil } from './shader_util.js'
+import { ATTR_POSITION, ATTR_NORMAL, ATTR_UV, Shader } from './shaders/shader.js'
 
 /** @type {WebGL2RenderingContext} */
 let gl;
-let prog_default;
-let position_loc;
-let point_size_loc;
-let bufVerts;
-let arrVerts;
+let vertCount;
 let meshCache = [];
 
 class App {
@@ -38,48 +34,6 @@ class App {
         gl.viewport(0, 0, w, h);
     }
 
-    loadProgram(vert, frag, validate) {
-        let vshader = ShaderUtil.compile(gl, vert, gl.VERTEX_SHADER);
-        if (!vshader) {
-            return null;
-        }
-        let fshader = ShaderUtil.compile(gl, frag, gl.FRAGMENT_SHADER);
-        if (!fshader) {
-            gl.deleteShader(vshader);
-            return null;
-        }
-        let prog = ShaderUtil.link(gl, vshader, fshader, validate);
-        if (!prog) {
-            gl.deleteShader(vshader);
-            gl.deleteShader(fshader);
-            return null;
-        }
-
-        gl.useProgram(prog);
-        //ATTR_POSITION["location"] = gl.getAttribLocation(prog, ATTR_POSITION["name"]);
-        point_size_loc = gl.getUniformLocation(prog, "u_point_size");
-        gl.useProgram(null);
-
-        prog_default = prog;
-    }
-
-    initDataBuffers() {
-        arrVerts = new Float32Array([
-            -0.4, 0.3, 0,
-             0.4, 0.3, 0,
-            -0.30, -0.5, 0,
-            -0.20, -0.3, 0,
-             0.00, -0.1, 0,
-             0.20, -0.3, 0,
-             0.30, -0.5, 0,
-        ]);
-        bufVerts = gl.createBuffer();
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufVerts);
-        gl.bufferData(gl.ARRAY_BUFFER, arrVerts, gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    }
-
     createMeshVAO(name, arrIdx, arrVert, arrNorm, arrUV) {
         var rtn = { drawMode: gl.TRIANGLES };
 
@@ -102,8 +56,8 @@ class App {
 
             gl.bindBuffer(gl.ARRAY_BUFFER, rtn.bufVertices);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arrVert), gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(SHADER_ATTR["position"]["location"]);
-            gl.vertexAttribPointer(SHADER_ATTR["position"]["location"], 3, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(ATTR_POSITION["location"]);
+            gl.vertexAttribPointer(ATTR_POSITION["location"], 3, gl.FLOAT, false, 0, 0);
         }
 
         if (arrNorm !== undefined && arrNorm !== null) {
@@ -111,8 +65,8 @@ class App {
 
             gl.bindBuffer(gl.ARRAY_BUFFER, rtn.bufNormals);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arrNorm), gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(SHADER_ATTR["normal"]["location"]);
-            gl.vertexAttribPointer(SHADER_ATTR["normal"]["location"], 3, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(ATTR_NORMAL["location"]);
+            gl.vertexAttribPointer(ATTR_NORMAL["location"], 3, gl.FLOAT, false, 0, 0);
         }
 
         if (arrUV !== undefined && arrUV !== null) {
@@ -120,8 +74,8 @@ class App {
 
             gl.bindBuffer(gl.ARRAY_BUFFER, rtn.bufUV);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arrUV), gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(SHADER_ATTR["uv"]["location"]);
-            gl.vertexAttribPointer(SHADER_ATTR["uv"]["location"], 2, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(ATTR_UV["location"]);
+            gl.vertexAttribPointer(ATTR_UV["location"], 2, gl.FLOAT, false, 0, 0);
         }
 
         gl.bindVertexArray(null);
@@ -131,16 +85,17 @@ class App {
         return rtn;
     }
 
-    draw() {
-        gl.useProgram(prog_default);
-        gl.uniform1f(point_size_loc, 100.0);
+    draw(shader, mesh) {
+        shader.bind();
+        gl.uniform1f(shader.uniformLoc["u_point_size"], 100.0);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufVerts);
-        gl.enableVertexAttribArray(position_loc);
-        gl.vertexAttribPointer(position_loc, 3, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.bufVertices);
+        gl.enableVertexAttribArray(shader.attribLoc["position"]);
+        gl.vertexAttribPointer(shader.attribLoc["position"], 3, gl.FLOAT, false, 0, 0);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-        gl.drawArrays(gl.POINTS, 0, 7);
+        gl.drawArrays(mesh.drawMode, 0, mesh.vertexCount);
+        shader.unbind();
     }
 }
 
