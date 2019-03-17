@@ -2,14 +2,21 @@
 // https://github.com/airbnb/javascript#modules--use-them
 // http://usejsdoc.org/tags-param.html
 
-import App from './app.js'
-import Model from './model.js'
-import DefaultShader from './shaders/default_shader.js'
+// Notes:
+// glUniform3fv to set 4 color palette via uniform, then use vertex array attribute to index into that palette
+
+import { App } from './app.js'
+import { Model } from './model.js'
+import { Primitives } from './primitives.js'
+import { DefaultShader } from './shaders/default_shader.js'
+import { Camera, CameraController } from './camera.js';
 
 let app;
 let gl;
 let shader;
 let model;
+let camera;
+let cameraCtrl;
 
 window.addEventListener("load", function() {
     app = new App("glcanvas");
@@ -17,21 +24,39 @@ window.addEventListener("load", function() {
     app.clear();
 
     gl = app.context();
-    shader = new DefaultShader(gl, true);
 
-    let arrVerts = new Float32Array([
-        -0.4, 0.3, 0,
-         0.4, 0.3, 0,
-        -0.30, -0.5, 0,
-        -0.20, -0.3, 0,
-         0.00, -0.1, 0,
-         0.20, -0.3, 0,
-         0.30, -0.5, 0,
-    ]);
+    camera = new Camera(gl, 45, 0.1, 1000);
+    camera.transform.position.set(0, 0, 3);
+    cameraCtrl = new CameraController(gl, camera);
+
+    shader = new DefaultShader(gl, true);
+    shader.bind().setProjectionMatrix(camera.projectionMatrix).unbind();
+
+    // let arrVerts = new Float32Array([
+    //     -0.4, 0.3, 0,
+    //      0.4, 0.3, 0,
+    //     -0.30, -0.5, 0,
+    //     -0.20, -0.3, 0,
+    //      0.00, -0.1, 0,
+    //      0.20, -0.3, 0,
+    //      0.30, -0.5, 0,
+    // ]);
+
+    let radius = 4;
+    let verts = [];
+    for (let x = -radius; x <= radius; x++) {
+        for (let y = -radius; y <= radius; y++) {
+            verts.push(x / radius, y / radius, 0);
+        }
+    }
+    let arrVerts = new Float32Array(verts);
     let mesh = app.createMeshVAO("creeper", null, arrVerts);
     mesh.drawMode = gl.POINTS;
 
-    model = new Model(mesh);
+    model = new Model(mesh)
+        //.setScale(1, 1, 1)
+        //.setRotation(0, 0, 45)
+        //.setPosition(0.8, 0.8, 0.0)
 
     let loop = new RenderLoop(onRender, 30);
     loop.start();
@@ -40,19 +65,24 @@ window.addEventListener("load", function() {
 let point_size = 0;
 let point_step = 3;
 let angle = 0;
-let angle_step = (Math.PI / 180.0) * 90;
+let angle_step = 30;
 
 function onRender(dt) {
     point_size += point_step * dt;
     angle += angle_step * dt;
-    let size = (Math.sin(point_size) * 10.0) + 80.0;
+    let size = (Math.sin(point_size) * 2.0) + 8.0;
 
+    //model.setRotation(0, 0, angle);
+
+    camera.updateViewMatrix();
     app.clear();
     shader.bind()
-    shader.setPointSize(size)
-    shader.setAngle(angle)
-    shader.renderModel(model)
-    shader.unbind();
+        .setPointSize(size)
+        .setAngle(angle)
+        .setCameraMatrix(camera.viewMatrix)
+        .setProjectionMatrix(camera.projectionMatrix)
+        .renderModel(model.preRender())
+        .unbind();
 }
 
 class RenderLoop {

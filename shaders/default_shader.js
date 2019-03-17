@@ -31,17 +31,24 @@ class DefaultShader extends Shader {
         return `#version 300 es
         in vec3 attr_position;
 
+        uniform mat4 u_projection_matrix;
+        uniform mat4 u_model_matrix;
+        uniform mat4 u_camera_matrix;
+
         uniform float u_point_size;
         uniform float u_angle;
 
         void main(void) {
             gl_PointSize = u_point_size;
-            gl_Position = vec4(
-                cos(u_angle) * 0.2 + attr_position.x,
-                sin(u_angle) * 0.2 + attr_position.y,
-                attr_position.z,
-                1.0
-            );
+            gl_Position = u_projection_matrix * u_camera_matrix * u_model_matrix * vec4(attr_position, 1.0);
+            //gl_Position = u_model_matrix * vec4(attr_position, 1.0);
+
+            // gl_Position = vec4(
+            //     cos(u_angle) * 0.2 + attr_position.x,
+            //     sin(u_angle) * 0.2 + attr_position.y,
+            //     attr_position.z,
+            //     1.0
+            // );
         }`;
     }
 
@@ -57,4 +64,4 @@ class DefaultShader extends Shader {
     }
 }
 
-export default DefaultShader;
+export { DefaultShader };

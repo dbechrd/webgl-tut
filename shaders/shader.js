@@ -1,3 +1,5 @@
+import { Model } from '../model.js'
+
 const ATTR_POSITION = { name: "attr_position", location: 0 };
 const ATTR_NORMAL   = { name: "attr_normal"  , location: 1 };
 const ATTR_UV       = { name: "attr_uv"      , location: 2 };
@@ -29,7 +31,7 @@ class Shader {
 
         gl.useProgram(prog);
         this.attribLoc = Shader.getStandardAttribLocations(gl, prog);
-        this.uniformLoc = {}
+        this.uniformLoc = Shader.getStandardUniformLocations(gl, prog);
         gl.useProgram(null);
 
         this.gl = gl;
@@ -45,10 +47,25 @@ class Shader {
 
     bind() {
         this.gl.useProgram(this.program);
+        return this;
     }
 
     unbind() {
         this.gl.useProgram(null);
+        return this;
+    }
+
+    setProjectionMatrix(matData) {
+        this.gl.uniformMatrix4fv(this.uniformLoc.projectionMatrix, false, matData);
+        return this;
+    }
+    setModelMatrix(matData) {
+        this.gl.uniformMatrix4fv(this.uniformLoc.modelMatrix, false, matData);
+        return this;
+    }
+    setCameraMatrix(matData) {
+        this.gl.uniformMatrix4fv(this.uniformLoc.cameraMatrix, false, matData);
+        return this;
     }
 
     preRender() {
@@ -56,9 +73,10 @@ class Shader {
 
     /**
      * Render a model using this shader.
-     * @param {Model} model - An instance of the model clas.
+     * @param {Model} model - An instance of the model class.
      */
     renderModel(model) {
+        this.setModelMatrix(model.transform.getViewMatrix());
         this.gl.bindVertexArray(model.mesh.vao);
         if (model.mesh.indexCount) {
             this.gl.drawElements(model.mesh.drawMode, model.mesh.indexLength, this.gl.UNSIGNED_SHORT, 0);
@@ -67,6 +85,7 @@ class Shader {
         }
 
         this.gl.bindVertexArray(null);
+        return this;
     }
 
     /**
@@ -137,6 +156,20 @@ class Shader {
             position: gl.getAttribLocation(program, ATTR_POSITION["name"]),
             normal:   gl.getAttribLocation(program, ATTR_NORMAL["name"]),
             uv:       gl.getAttribLocation(program, ATTR_UV["name"]),
+        };
+    }
+
+    /**
+     * Get location of standard uniforms (or -1 if uniform not used by shader)
+     * @param {WebGL2RenderingContext} gl - The WebGL context.
+     * @param {WebGLProgram} program - The WebGL shader program.
+     */
+    static getStandardUniformLocations(gl, program) {
+        return {
+            projectionMatrix: gl.getUniformLocation(program, "u_projection_matrix"),
+            modelMatrix:      gl.getUniformLocation(program, "u_model_matrix"),
+            cameraMatrix:     gl.getUniformLocation(program, "u_camera_matrix"),
+            mainTexture:      gl.getUniformLocation(program, "u_main_texture")
         };
     }
 }

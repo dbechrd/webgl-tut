@@ -14,7 +14,8 @@ class App {
             console.error("WebGL 2 context is not supported in this browser.");
             return null;
         }
-        gl.clearColor(0.2, 0.8, 0.0, 1.0);
+        //gl.clearColor(0.2, 0.8, 0.0, 1.0);
+        gl.clearColor(1, 1, 1, 1);
     }
 
     context() {
@@ -99,4 +100,4 @@ class App {
     }
 }
 
-export default App;
+export { App };
