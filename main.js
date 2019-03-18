@@ -5,25 +5,64 @@
 // Notes:
 // glUniform3fv to set 4 color palette via uniform, then use vertex array attribute to index into that palette
 
-import { App } from './app.js'
-import { Model } from './model.js'
-import { Primitives } from './primitives.js'
-import { DefaultShader } from './shaders/default_shader.js'
-import { Camera, CameraController } from './camera.js';
+import { App } from "./app.js"
+import { Mesh } from "./mesh.js"
+import { Model } from "./model.js"
+import { Primitives } from "./primitives.js"
+import { DefaultShader } from "./shaders/default_shader.js"
+import { Camera, CameraController } from "./camera.js";
+import { gl, Globals } from "./globals.js";
+
+/** @type {AudioContext} */
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+const audioElement = document.querySelector("audio");
+const track = audioCtx.createMediaElementSource(audioElement);
 
 let app;
-let gl;
 let shader;
-let model;
+let pointGridModel;
+let gridModel;
+let quadModels = [];
 let camera;
 let cameraCtrl;
 
+Globals.Canvas.addEventListener("click", function(e) {
+    if (e.offsetX > 20 || e.offsetY > 20)
+        return;
+
+    if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+        audioElement.play();
+    } else {
+        audioCtx.suspend();
+    }
+});
+
 window.addEventListener("load", function() {
-    app = new App("glcanvas");
-    app.setSize(500, 500);
+    app = new App();
+    app.fitScreen();
     app.clear();
 
-    gl = app.context();
+    let gainNode = audioCtx.createGain();
+    gainNode.gain.value = 0.5;
+
+    // TODO: PannerNode for spatial
+
+    // let oscNode = new OscillatorNode(audioCtx);
+    // oscNode.frequency.setValueAtTime(261.6, 0.0);
+    // osc.connect(gain).connect(audioCtx.destination);
+    // osc.start();
+    track.connect(gainNode).connect(audioCtx.destination);
+    let promise;// = audioElement.play();
+    if (promise !== undefined) {
+        promise.then(_ => {
+            // Autoplay started!
+        }).catch(error => {
+            // Autoplay was prevented.
+            // Show a "Play" button so that user can start playback.
+        });
+    }
 
     camera = new Camera(gl, 45, 0.1, 1000);
     camera.transform.position.set(0, 0, 3);
@@ -32,16 +71,7 @@ window.addEventListener("load", function() {
     shader = new DefaultShader(gl, true);
     shader.bind().setProjectionMatrix(camera.projectionMatrix).unbind();
 
-    // let arrVerts = new Float32Array([
-    //     -0.4, 0.3, 0,
-    //      0.4, 0.3, 0,
-    //     -0.30, -0.5, 0,
-    //     -0.20, -0.3, 0,
-    //      0.00, -0.1, 0,
-    //      0.20, -0.3, 0,
-    //      0.30, -0.5, 0,
-    // ]);
-
+    // Grid
     let radius = 4;
     let verts = [];
     for (let x = -radius; x <= radius; x++) {
@@ -50,13 +80,17 @@ window.addEventListener("load", function() {
         }
     }
     let arrVerts = new Float32Array(verts);
-    let mesh = app.createMeshVAO("creeper", null, arrVerts);
-    mesh.drawMode = gl.POINTS;
+    let pointGridMesh = new Mesh("point_grid", null, arrVerts);
 
-    model = new Model(mesh)
-        //.setScale(1, 1, 1)
-        //.setRotation(0, 0, 45)
-        //.setPosition(0.8, 0.8, 0.0)
+    pointGridMesh.drawMode = gl.POINTS;
+    pointGridModel = new Model(pointGridMesh)
+        .setRotation(-60, 0, 30)
+
+    gridModel = Primitives.GridAxis.createModel(gl, true);
+
+    let quadModel = Primitives.Quad.createModel(gl);
+    quadModel.mesh.disableCull = true;
+    quadModels.push(quadModel);
 
     let loop = new RenderLoop(onRender, 30);
     loop.start();
@@ -64,15 +98,14 @@ window.addEventListener("load", function() {
 
 let point_size = 0;
 let point_step = 3;
-let angle = 0;
 let angle_step = 30;
 
 function onRender(dt) {
     point_size += point_step * dt;
-    angle += angle_step * dt;
-    let size = (Math.sin(point_size) * 2.0) + 8.0;
+    let angle = angle_step * dt;
+    let size = (Math.sin(point_size) * 10.0) + 20.0;
 
-    //model.setRotation(0, 0, angle);
+    pointGridModel.addRotation(0, 0, angle);
 
     camera.updateViewMatrix();
     app.clear();
@@ -81,8 +114,12 @@ function onRender(dt) {
         .setAngle(angle)
         .setCameraMatrix(camera.viewMatrix)
         .setProjectionMatrix(camera.projectionMatrix)
-        .renderModel(model.preRender())
-        .unbind();
+        .renderModel(pointGridModel.preRender())
+        .renderModel(gridModel.preRender());
+    quadModels.forEach(quadModel => {
+        shader.renderModel(quadModel.preRender());
+    });
+    shader.unbind();
 }
 
 class RenderLoop {
@@ -93,7 +130,7 @@ class RenderLoop {
         this.active = false;
         this.fps = 0;
 
-        if (!fps && fps > 0) {
+        if (fps != undefined && fps > 0) {
             this.msFpsLimit = 1000 / fps;
 
             this.run = function() {

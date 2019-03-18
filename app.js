@@ -1,25 +1,17 @@
-import { ATTR_POSITION, ATTR_NORMAL, ATTR_UV, Shader } from './shaders/shader.js'
-
-/** @type {WebGL2RenderingContext} */
-let gl;
-let vertCount;
-let meshCache = [];
+import { gl } from "./globals.js"
 
 class App {
-    constructor(canvasId) {
-        /** @type {HTMLCanvasElement} */
-        let canvas = document.getElementById(canvasId);
-        gl = canvas.getContext("webgl2");
-        if (!gl) {
-            console.error("WebGL 2 context is not supported in this browser.");
-            return null;
-        }
-        //gl.clearColor(0.2, 0.8, 0.0, 1.0);
+    /**
+     * @param {HTMLCanvasElement} canvas - The WebGL canvas element.
+    */
+    constructor() {
+        gl.cullFace(gl.BACK);
+        gl.frontFace(gl.CCW);
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+        gl.depthFunc(gl.LEQUAL);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.clearColor(1, 1, 1, 1);
-    }
-
-    context() {
-        return gl;
     }
 
     clear() {
@@ -31,59 +23,14 @@ class App {
         gl.canvas.style.height = h + "px";
         gl.canvas.width = w;
         gl.canvas.height = h;
-
         gl.viewport(0, 0, w, h);
     }
 
-    createMeshVAO(name, arrIdx, arrVert, arrNorm, arrUV) {
-        var rtn = { drawMode: gl.TRIANGLES };
-
-        rtn.vao = gl.createVertexArray();
-        gl.bindVertexArray(rtn.vao);
-
-        if (arrIdx !== undefined && arrIdx !== null) {
-            rtn.bufIndex = gl.createBuffer();
-            rtn.indexCount = arrIdx.length;
-
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, rtn.bufIndex);
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(arrIdx), gl.STATIC_DRAW);
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-        }
-
-        if (arrVert !== undefined && arrVert !== null) {
-            rtn.bufVertices = gl.createBuffer();
-            rtn.vertexComponentLen = 3;
-            rtn.vertexCount = arrVert.length / rtn.vertexComponentLen;
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, rtn.bufVertices);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arrVert), gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(ATTR_POSITION["location"]);
-            gl.vertexAttribPointer(ATTR_POSITION["location"], 3, gl.FLOAT, false, 0, 0);
-        }
-
-        if (arrNorm !== undefined && arrNorm !== null) {
-            rtn.bufNormals = gl.createBuffer();
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, rtn.bufNormals);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arrNorm), gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(ATTR_NORMAL["location"]);
-            gl.vertexAttribPointer(ATTR_NORMAL["location"], 3, gl.FLOAT, false, 0, 0);
-        }
-
-        if (arrUV !== undefined && arrUV !== null) {
-            rtn.bufUV = gl.createBuffer();
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, rtn.bufUV);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arrUV), gl.STATIC_DRAW);
-            gl.enableVertexAttribArray(ATTR_UV["location"]);
-            gl.vertexAttribPointer(ATTR_UV["location"], 2, gl.FLOAT, false, 0, 0);
-        }
-
-        gl.bindVertexArray(null);
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-        meshCache[name] = rtn;
-        return rtn;
+    fitScreen(wp, hp) {
+        let width = window.innerWidth * Math.max(0, Math.min(0.99, (wp || 1)));
+        let height = window.innerHeight * Math.max(0, Math.min(0.99, (hp || 1)));
+        let radius = Math.min(width, height);
+        this.setSize(radius, radius);
     }
 
     draw(shader, mesh) {
