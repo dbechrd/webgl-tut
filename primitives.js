@@ -8,7 +8,11 @@ var Primitives = {};
 Primitives.Quad = class {
 	static MESH_NAME() { return "_Primitives.Quad"; }
 	static createModel(gl) {
-		return new Model(Globals.MeshCache[this.MESH_NAME()] || Primitives.Quad.createMesh(gl));
+        let mesh = Globals.MeshCache[this.MESH_NAME()] || Primitives.Quad.createMesh(gl);
+        mesh.disableCull = true;
+        mesh.enableBlend = true;
+        let model = new Model(mesh);
+        return model;
 	}
 	static createMesh(gl) {
 		let verts = [

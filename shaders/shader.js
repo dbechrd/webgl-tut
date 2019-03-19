@@ -36,6 +36,7 @@ class Shader {
         gl.useProgram(null);
 
         this.program = prog;
+        this.mainTexture = -1;
     }
 
     dispose() {
@@ -67,8 +68,16 @@ class Shader {
         gl.uniformMatrix4fv(this.uniformLoc.cameraMatrix, false, matData);
         return this;
     }
+    setTexture(texId) {
+        this.mainTexture = texId;
+        return this;
+    }
 
     preRender() {
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.mainTexture);
+        gl.uniform1i(this.uniformLoc.mainTexture, 0);
+        return this;
     }
 
     /**

@@ -12,6 +12,7 @@ import { Primitives } from "./primitives.js"
 import { DefaultShader } from "./shaders/default_shader.js"
 import { Camera, CameraController } from "./camera.js";
 import { gl, Globals } from "./globals.js";
+import { Texture } from "./texture.js";
 
 /** @type {AudioContext} */
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -68,8 +69,13 @@ window.addEventListener("load", function() {
     camera.transform.position.set(0, 0, 3);
     cameraCtrl = new CameraController(gl, camera);
 
+    let texture = new Texture("texture1", document.getElementById("texture1"));
+
     shader = new DefaultShader(gl, true);
-    shader.bind().setProjectionMatrix(camera.projectionMatrix).unbind();
+    shader.bind()
+        .setProjectionMatrix(camera.projectionMatrix)
+        .setTexture(texture)
+        .unbind();
 
     // Grid
     let radius = 4;
@@ -89,7 +95,6 @@ window.addEventListener("load", function() {
     gridModel = Primitives.GridAxis.createModel(gl, true);
 
     let quadModel = Primitives.Quad.createModel(gl);
-    quadModel.mesh.disableCull = true;
     quadModels.push(quadModel);
 
     let loop = new RenderLoop(onRender, 30);
@@ -114,6 +119,7 @@ function onRender(dt) {
         .setAngle(angle)
         .setCameraMatrix(camera.viewMatrix)
         .setProjectionMatrix(camera.projectionMatrix)
+        .preRender()
         .renderModel(pointGridModel.preRender())
         .renderModel(gridModel.preRender());
     quadModels.forEach(quadModel => {

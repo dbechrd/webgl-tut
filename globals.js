@@ -3,6 +3,7 @@ let gl;
 
 let Globals = {}
 Globals.MeshCache = [];
+Globals.TextureCache = [];
 /** @type {HTMLCanvasElement} */
 Globals.Canvas;
 
