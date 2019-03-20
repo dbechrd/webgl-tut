@@ -56,6 +56,10 @@ class Shader {
         return this;
     }
 
+    setTime(time) {
+        gl.uniform1f(this.uniformLoc.time, time);
+        return this;
+    }
     setProjectionMatrix(matData) {
         gl.uniformMatrix4fv(this.uniformLoc.projectionMatrix, false, matData);
         return this;
@@ -184,10 +188,11 @@ class Shader {
      */
     static getStandardUniformLocations(gl, program) {
         return {
+            time:             gl.getUniformLocation(program, "u_time"),
             projectionMatrix: gl.getUniformLocation(program, "u_projection_matrix"),
             modelMatrix:      gl.getUniformLocation(program, "u_model_matrix"),
             cameraMatrix:     gl.getUniformLocation(program, "u_camera_matrix"),
-            mainTexture:      gl.getUniformLocation(program, "u_main_texture")
+            mainTexture:      gl.getUniformLocation(program, "u_main_texture"),
         };
     }
 }

@@ -1,3 +1,4 @@
+import { gl } from './globals.js'
 import { Transform } from './transform.js'
 import { Matrix4 } from './math.js'
 
@@ -9,13 +10,9 @@ class Camera {
      * @param {number} far- Far plane.
      */
     constructor(gl, fov, near, far) {
-        this.projectionMatrix = new Float32Array(16);
-        let ratio = gl.canvas.width / gl.canvas.height;
-        Matrix4.perspective(this.projectionMatrix, fov || 45, ratio, near || 0.1, far || 100.0);
-
+        this.updateProjectionMatrix();
         this.transform = new Transform();
         this.viewMatrix = new Float32Array(16);
-
         this.mode = Camera.MODE_ORBIT;
     }
 
@@ -42,6 +39,12 @@ class Camera {
         this.transform.position.x += this.transform.forward[0] * v;
         this.transform.position.y += this.transform.forward[1] * v;
         this.transform.position.z += this.transform.forward[2] * v;
+    }
+
+    updateProjectionMatrix(fov, near, far) {
+        this.projectionMatrix = new Float32Array(16);
+        let ratio = gl.canvas.width / gl.canvas.height;
+        Matrix4.perspective(this.projectionMatrix, fov || 45, ratio, near || 0.1, far || 100.0);
     }
 
     updateViewMatrix() {

@@ -26,11 +26,10 @@ class App {
         gl.viewport(0, 0, w, h);
     }
 
-    fitScreen(wp, hp) {
-        let width = window.innerWidth * Math.max(0, Math.min(0.99, (wp || 1)));
-        let height = window.innerHeight * Math.max(0, Math.min(0.99, (hp || 1)));
-        let radius = Math.min(width, height);
-        this.setSize(radius, radius);
+    fitScreen() {
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        this.setSize(width, height);
     }
 
     draw(shader, mesh) {

@@ -28,6 +28,13 @@ let quadModels = [];
 let camera;
 let cameraCtrl;
 
+window.addEventListener("resize", function(e) {
+    if (app) {
+        app.fitScreen();
+        camera.updateProjectionMatrix();
+    }
+});
+
 Globals.Canvas.addEventListener("click", function(e) {
     if (e.offsetX > 20 || e.offsetY > 20)
         return;
@@ -115,10 +122,11 @@ function onRender(dt) {
     camera.updateViewMatrix();
     app.clear();
     shader.bind()
-        .setPointSize(size)
-        .setAngle(angle)
+        .setTime(performance.now())
         .setCameraMatrix(camera.viewMatrix)
         .setProjectionMatrix(camera.projectionMatrix)
+        .setPointSize(size)
+        .setAngle(angle)
         .preRender()
         .renderModel(pointGridModel.preRender())
         .renderModel(gridModel.preRender());
