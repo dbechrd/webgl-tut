@@ -14,16 +14,16 @@ class Shader {
      * @param {boolean} validate - Validate shader program after compiling.
      */
     constructor(vertShaderSrc, fragShaderSrc, validate) {
-        let vert = Shader.compile(gl, vertShaderSrc, gl.VERTEX_SHADER);
+        let vert = Shader.compile(vertShaderSrc, gl.VERTEX_SHADER);
         if (!vert) {
             return null;
         }
-        let frag = Shader.compile(gl, fragShaderSrc, gl.FRAGMENT_SHADER);
+        let frag = Shader.compile(fragShaderSrc, gl.FRAGMENT_SHADER);
         if (!frag) {
             gl.deleteShader(vert);
             return null;
         }
-        let prog = Shader.link(gl, vert, frag, validate);
+        let prog = Shader.link(vert, frag, validate);
         if (!prog) {
             gl.deleteShader(vert);
             gl.deleteShader(frag);
@@ -31,8 +31,8 @@ class Shader {
         }
 
         gl.useProgram(prog);
-        this.attribLoc = Shader.getStandardAttribLocations(gl, prog);
-        this.uniformLoc = Shader.getStandardUniformLocations(gl, prog);
+        this.attribLoc = Shader.getStandardAttribLocations(prog);
+        this.uniformLoc = Shader.getStandardUniformLocations(prog);
         gl.useProgram(null);
 
         this.program = prog;
@@ -114,7 +114,7 @@ class Shader {
      * @param {string} src - The shader source code.
      * @param {number} type - GL shader type.
      */
-    static compile(gl, src, type) {
+    static compile(src, type) {
         let shader = gl.createShader(type);
         gl.shaderSource(shader, src);
         gl.compileShader(shader);
@@ -133,7 +133,7 @@ class Shader {
      * @param {string} frag_shader - The fragmenet shader source.
      * @param {boolean} validate - Validate shader program after compiling.
      */
-    static link(gl, vert_shader, frag_shader, validate) {
+    static link(vert_shader, frag_shader, validate) {
         let prog = gl.createProgram();
         gl.attachShader(prog, vert_shader);
         gl.attachShader(prog, frag_shader);
@@ -172,7 +172,7 @@ class Shader {
      * @param {WebGL2RenderingContext} gl - The WebGL context.
      * @param {WebGLProgram} program - The WebGL shader program.
      */
-    static getStandardAttribLocations(gl, program) {
+    static getStandardAttribLocations(program) {
         return {
             position: gl.getAttribLocation(program, ATTR_POSITION["name"]),
             normal:   gl.getAttribLocation(program,   ATTR_NORMAL["name"]),
@@ -186,7 +186,7 @@ class Shader {
      * @param {WebGL2RenderingContext} gl - The WebGL context.
      * @param {WebGLProgram} program - The WebGL shader program.
      */
-    static getStandardUniformLocations(gl, program) {
+    static getStandardUniformLocations(program) {
         return {
             time:             gl.getUniformLocation(program, "u_time"),
             projectionMatrix: gl.getUniformLocation(program, "u_projection_matrix"),

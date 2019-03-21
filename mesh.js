@@ -2,7 +2,7 @@ import { gl, Globals } from "./globals.js"
 import { ATTR_POSITION, ATTR_NORMAL, ATTR_UV, ATTR_COLOR } from './shaders/shader.js'
 
 class Mesh {
-    constructor(name, arrIdx, arrPos, arrNorm, arrUV, arrColor) {
+    constructor(name, vertCompLen, uvCompLen, arrIdx, arrPos, arrNorm, arrUV, arrColor) {
         this.drawMode = gl.TRIANGLES;
         this.disableCull = false;
         this.enableBlend = false;
@@ -20,13 +20,14 @@ class Mesh {
 
         if (arrPos !== undefined && arrPos !== null) {
             this.bufVertices = gl.createBuffer();
-            this.vertexComponentLen = 3;
+            this.vertexComponentLen = vertCompLen;
             this.vertexCount = arrPos.length / this.vertexComponentLen;
 
             gl.bindBuffer(gl.ARRAY_BUFFER, this.bufVertices);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arrPos), gl.STATIC_DRAW);
             gl.enableVertexAttribArray(ATTR_POSITION["location"]);
-            gl.vertexAttribPointer(ATTR_POSITION["location"], 3, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(ATTR_POSITION["location"], this.vertexComponentLen,
+                gl.FLOAT, false, 0, 0);
         }
 
         if (arrNorm !== undefined && arrNorm !== null) {
@@ -40,11 +41,12 @@ class Mesh {
 
         if (arrUV !== undefined && arrUV !== null) {
             this.bufUV = gl.createBuffer();
+            this.uvComponentLen = uvCompLen;
 
             gl.bindBuffer(gl.ARRAY_BUFFER, this.bufUV);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arrUV), gl.STATIC_DRAW);
             gl.enableVertexAttribArray(ATTR_UV["location"]);
-            gl.vertexAttribPointer(ATTR_UV["location"], 2, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(ATTR_UV["location"], this.uvComponentLen, gl.FLOAT, false, 0, 0);
         }
 
         if (arrColor !== undefined && arrColor !== null) {

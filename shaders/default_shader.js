@@ -4,7 +4,6 @@ import { Shader } from "./shader.js"
 class DefaultShader extends Shader {
     /**
      * Construct (link and compile) a new DefaultShader.
-     * @param {WebGL2RenderingContext} gl - The WebGL context.
      * @param {boolean} validate - Validate shader program after compiling.
      */
     constructor(validate) {

@@ -9,7 +9,7 @@ class Camera {
      * @param {number} near - Near plane.
      * @param {number} far- Far plane.
      */
-    constructor(gl, fov, near, far) {
+    constructor(fov, near, far) {
         this.updateProjectionMatrix();
         this.transform = new Transform();
         this.viewMatrix = new Float32Array(16);
@@ -65,6 +65,12 @@ class Camera {
         Matrix4.invert(this.viewMatrix, this.transform.matView.raw);
         return this.viewMatrix;
     }
+
+    viewMatrixOrigin() {
+        let mat = new Float32Array(this.viewMatrix);
+        mat[12] = mat[13] = mat[14] = 0.0;
+        return mat;
+    }
 }
 
 Camera.MODE_FREE = 0;
@@ -75,7 +81,7 @@ class CameraController {
      * @param {WebGL2RenderingContext} gl - The WebGL context.
      * @param {Camera} camera - The camera to control.
      */
-    constructor(gl, camera) {
+    constructor(camera) {
         let oThis = this;
         let box = gl.canvas.getBoundingClientRect();
         this.canvas = gl.canvas;

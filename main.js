@@ -10,9 +10,11 @@ import { Mesh } from "./mesh.js"
 import { Model } from "./model.js"
 import { Primitives } from "./primitives.js"
 import { DefaultShader } from "./shaders/default_shader.js"
+import { SkyboxShader } from "./shaders/skybox_shader.js"
 import { Camera, CameraController } from "./camera.js";
 import { gl, Globals } from "./globals.js";
 import { Texture } from "./texture.js";
+import { CubeMap } from "./cubemap.js";
 
 /** @type {AudioContext} */
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -25,14 +27,15 @@ let shader;
 let pointGridModel;
 let gridModel;
 let quadModels = [];
+/** @type {Camera} */
 let camera;
 let cameraCtrl;
+let skyboxModel;
+let skyboxShader;
 
 window.addEventListener("resize", function(e) {
-    if (app) {
-        app.fitScreen();
-        camera.updateProjectionMatrix();
-    }
+    app.fitScreen();
+    camera.updateProjectionMatrix();
 });
 
 Globals.Canvas.addEventListener("click", function(e) {
@@ -72,13 +75,28 @@ window.addEventListener("load", function() {
         });
     }
 
-    camera = new Camera(gl, 45, 0.1, 1000);
+    camera = new Camera(45, 0.1, 1000);
     camera.transform.position.set(0, 0, 3);
-    cameraCtrl = new CameraController(gl, camera);
+    cameraCtrl = new CameraController(camera);
 
     let texture = new Texture("texture1", document.getElementById("texture1"));
 
-    shader = new DefaultShader(gl, true);
+    let skyboxCubemap = new CubeMap("skybox1",
+        document.getElementById("skybox_posx"),
+        document.getElementById("skybox_negx"),
+        document.getElementById("skybox_posy"),
+        document.getElementById("skybox_negy"),
+        document.getElementById("skybox_posz"),
+        document.getElementById("skybox_negz"),
+    );
+    skyboxModel = new Model(Primitives.Cube.createMesh("skybox1", 10, 10, 10, 0, 0, 0));
+    skyboxShader = new SkyboxShader(true)
+    skyboxShader.bind()
+        .setProjectionMatrix(camera.projectionMatrix)
+        .setTexture(skyboxCubemap)
+        .unbind()
+
+    shader = new DefaultShader(true);
     shader.bind()
         .setProjectionMatrix(camera.projectionMatrix)
         .setTexture(texture)
@@ -93,15 +111,15 @@ window.addEventListener("load", function() {
         }
     }
     let arrVerts = new Float32Array(verts);
-    let pointGridMesh = new Mesh("point_grid", null, arrVerts);
+    let pointGridMesh = new Mesh("point_grid", 3, 2, null, arrVerts);
 
     pointGridMesh.drawMode = gl.POINTS;
     pointGridModel = new Model(pointGridMesh)
         .setRotation(-60, 0, 30)
 
-    gridModel = Primitives.GridAxis.createModel(gl, true);
+    gridModel = Primitives.GridAxis.createModel(true);
 
-    let quadModel = Primitives.Quad.createModel(gl);
+    let quadModel = Primitives.Quad.createModel();
     quadModels.push(quadModel);
 
     let loop = new RenderLoop(onRender, 30);
@@ -121,8 +139,18 @@ function onRender(dt) {
 
     camera.updateViewMatrix();
     app.clear();
+
+    let time = performance.now();
+
+    skyboxShader.bind()
+        .setTime(time)
+        .setCameraMatrix(camera.viewMatrixOrigin())
+        .setProjectionMatrix(camera.projectionMatrix)
+        .preRender()
+        .renderModel(skyboxModel);
+
     shader.bind()
-        .setTime(performance.now())
+        .setTime(time)
         .setCameraMatrix(camera.viewMatrix)
         .setProjectionMatrix(camera.projectionMatrix)
         .setPointSize(size)
@@ -133,7 +161,6 @@ function onRender(dt) {
     quadModels.forEach(quadModel => {
         shader.renderModel(quadModel.preRender());
     });
-    shader.unbind();
 }
 
 class RenderLoop {
