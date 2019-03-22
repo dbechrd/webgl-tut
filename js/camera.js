@@ -89,7 +89,8 @@ class CameraController {
 
         this.rotateRate = -300;
         this.panRate = 5;
-        this.zoomRate = 200;
+        //this.zoomRate = 200;
+        this.zoomRate = 1;
 
         this.offsetX = box.left;
         this.offsetY = box.top;
@@ -128,7 +129,8 @@ class CameraController {
 
     onMouseWheel(e) {
         let delta = -Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-        this.camera.panZ(delta * (this.zoomRate / this.canvas.height));
+        //this.camera.panZ(delta * (this.zoomRate / this.canvas.height));
+        this.camera.panZ(delta * this.zoomRate);
     }
 
     onMouseMove(e) {

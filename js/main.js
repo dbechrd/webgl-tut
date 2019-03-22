@@ -94,7 +94,7 @@ window.addEventListener("load", function() {
         document.getElementById("skybox_posz"),
         document.getElementById("skybox_negz"),
     );
-    skyboxModel = new Model(Primitives.Cube.createMesh("skybox1", 10, 10, 10, 0, 0, 0));
+    skyboxModel = new Model(Primitives.Cube.createMesh("skybox1", 100, 100, 100, 0, 0, 0));
     skyboxShader = new SkyboxShader(true)
     skyboxShader.bind()
         .setProjectionMatrix(camera.projectionMatrix)
@@ -147,7 +147,8 @@ window.addEventListener("load", function() {
 
     let cubeMesh = Mesh.parseObjText("cube_obj", CubeMesh.data());
     cubeMesh.disableCull = true;
-    cubeModel = new Model(cubeMesh);
+    cubeModel = new Model(cubeMesh)
+        .setScale(3.0, 3.0, 3.0);
 
     let loop = new RenderLoop(onRender, 30);
     loop.start();

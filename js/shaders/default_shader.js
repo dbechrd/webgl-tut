@@ -72,7 +72,10 @@ class DefaultShader extends Shader {
             float alpha = step(0.3, len) * (1.0 - step(0.4, len));
 
             float use_tex = 1.0 - step(0.01, length(vert_color));
-            final_color = mix(vec4(vert_color, 1.0), texture(u_main_texture, vert_uv), use_tex);
+            vec4 v = vec4(vert_color, 1.0);
+            vec4 t = texture(u_main_texture, vert_uv);
+
+            final_color = mix(v, t, use_tex);
         }`;
     }
 }
