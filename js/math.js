@@ -13,15 +13,15 @@ class Vector3 {
         }
 
         //Get magnitude based on another vector
-        var x = v.x - this.x;
-        var y = v.y - this.y;
-        var z = v.y - this.z;
+        let x = v.x - this.x;
+        let y = v.y - this.y;
+        let z = v.y - this.z;
 
         return Math.sqrt(x * x + y * y + z * z);
     }
 
     normalize() {
-        var mag = this.magnitude();
+        let mag = this.magnitude();
         this.x /= mag;
         this.y /= mag;
         this.z /= mag;
@@ -102,7 +102,7 @@ class Matrix4 {
     //Methods
     //Bring is back to identity without changing the transform values.
     resetRotation() {
-        for (var i = 0; i < this.raw.length; i++) {
+        for (let i = 0; i < this.raw.length; i++) {
             if (i >= 12 && i <= 14) continue;
 
             this.raw[i] = (i % 5 == 0) ? 1 : 0;
@@ -114,7 +114,7 @@ class Matrix4 {
 
     //reset data back to identity.
     reset() {
-        for (var i = 0; i < this.raw.length; i++) {
+        for (let i = 0; i < this.raw.length; i++) {
             this.raw[i] = (i % 5 == 0) ? 1 : 0
         }
         //only positions 0,5,10,15 need to be 1 else 0.
@@ -124,15 +124,15 @@ class Matrix4 {
     //....................................................................
     //Static Data Methods
     static identity() {
-        var a = new Float32Array(16);
+        let a = new Float32Array(16);
         a[0] = a[5] = a[10] = a[15] = 1;
         return a;
     }
 
     //from glMatrix
     static perspective(out, fovy, aspect, near, far) {
-        var f = 1.0 / Math.tan(fovy / 2);
-        var nf = 1 / (near - far);
+        let f = 1.0 / Math.tan(fovy / 2);
+        let nf = 1 / (near - far);
         out[0] = f / aspect;
         out[1] = 0;
         out[2] = 0;
@@ -153,9 +153,9 @@ class Matrix4 {
 
 
     static ortho(out, left, right, bottom, top, near, far) {
-        var lr = 1 / (left - right);
-        var bt = 1 / (bottom - top);
-        var nf = 1 / (near - far);
+        let lr = 1 / (left - right);
+        let bt = 1 / (bottom - top);
+        let nf = 1 / (near - far);
         out[0] = -2 * lr;
         out[1] = 0;
         out[2] = 0;
@@ -180,7 +180,7 @@ class Matrix4 {
     static transpose(out, a) {
         //If we are transposing ourselves we can skip a few steps but have to cache some values
         if (out === a) {
-            var a01 = a[1], a02 = a[2], a03 = a[3], a12 = a[6], a13 = a[7], a23 = a[11];
+            let a01 = a[1], a02 = a[2], a03 = a[3], a12 = a[6], a13 = a[7], a23 = a[11];
             out[1] = a[4];
             out[2] = a[8];
             out[3] = a[12];
@@ -217,7 +217,7 @@ class Matrix4 {
 
     //Calculates a 3x3 normal matrix (transpose inverse) from the 4x4 matrix
     static normalMat3(out, a) {
-        var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
+        let a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
             a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
             a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
             a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15],
@@ -261,8 +261,8 @@ class Matrix4 {
 
     //https://github.com/gregtatum/mdn-model-view-projection/blob/master/shared/matrices.js
     static multiplyVector(mat4, v) {
-        var x = v[0], y = v[1], z = v[2], w = v[3];
-        var c1r1 = mat4[0], c2r1 = mat4[1], c3r1 = mat4[2], c4r1 = mat4[3],
+        let x = v[0], y = v[1], z = v[2], w = v[3];
+        let c1r1 = mat4[0], c2r1 = mat4[1], c3r1 = mat4[2], c4r1 = mat4[3],
             c1r2 = mat4[4], c2r2 = mat4[5], c3r2 = mat4[6], c4r2 = mat4[7],
             c1r3 = mat4[8], c2r3 = mat4[9], c3r3 = mat4[10], c4r3 = mat4[11],
             c1r4 = mat4[12], c2r4 = mat4[13], c3r4 = mat4[14], c4r4 = mat4[15];
@@ -287,13 +287,13 @@ class Matrix4 {
     //From glMatrix
     //Multiple two mat4 together
     static mult(out, a, b) {
-        var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
+        let a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
             a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
             a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
             a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
 
         // Cache only the current line of the second matrix
-        var b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
+        let b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
         out[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
         out[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
         out[2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
@@ -348,7 +348,7 @@ class Matrix4 {
     };
 
     static rotateY(out, rad) {
-        var s = Math.sin(rad),
+        let s = Math.sin(rad),
             c = Math.cos(rad),
             a00 = out[0],
             a01 = out[1],
@@ -372,7 +372,7 @@ class Matrix4 {
     }
 
     static rotateX(out, rad) {
-        var s = Math.sin(rad),
+        let s = Math.sin(rad),
             c = Math.cos(rad),
             a10 = out[4],
             a11 = out[5],
@@ -396,7 +396,7 @@ class Matrix4 {
     }
 
     static rotateZ(out, rad) {
-        var s = Math.sin(rad),
+        let s = Math.sin(rad),
             c = Math.cos(rad),
             a00 = out[0],
             a01 = out[1],
@@ -420,7 +420,7 @@ class Matrix4 {
     }
 
     static rotate(out, rad, axis) {
-        var x = axis[0], y = axis[1], z = axis[2],
+        let x = axis[0], y = axis[1], z = axis[2],
             len = Math.sqrt(x * x + y * y + z * z),
             s, c, t,
             a00, a01, a02, a03,
@@ -486,7 +486,7 @@ class Matrix4 {
         if (mat === undefined) mat = out;
         //If input isn't sent, then output is also input
 
-        var a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3],
+        let a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3],
             a10 = mat[4], a11 = mat[5], a12 = mat[6], a13 = mat[7],
             a20 = mat[8], a21 = mat[9], a22 = mat[10], a23 = mat[11],
             a30 = mat[12], a31 = mat[13], a32 = mat[14], a33 = mat[15],

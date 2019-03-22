@@ -36,7 +36,6 @@ class Shader {
         gl.useProgram(null);
 
         this.program = prog;
-        this.mainTexture = -1;
     }
 
     dispose() {

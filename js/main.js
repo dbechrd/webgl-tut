@@ -23,7 +23,9 @@ const audioElement = document.querySelector("audio");
 const track = audioCtx.createMediaElementSource(audioElement);
 
 let app;
-let shader;
+let gridShader;
+let pointShader;
+let quadShader;
 let pointGridModel;
 let gridModel;
 let quadModels = [];
@@ -76,10 +78,11 @@ window.addEventListener("load", function() {
     }
 
     camera = new Camera(45, 0.1, 1000);
-    camera.transform.position.set(0, 0, 3);
+    camera.transform.position.set(0, 0.5, 3);
     cameraCtrl = new CameraController(camera);
 
     let texture = new Texture("texture1", document.getElementById("texture1"));
+    let tex_black = new Texture("tex_black", document.getElementById("tex_black"));
 
     let skyboxCubemap = new CubeMap("skybox1",
         document.getElementById("skybox_posx"),
@@ -96,22 +99,38 @@ window.addEventListener("load", function() {
         .setTexture(skyboxCubemap)
         .unbind()
 
-    shader = new DefaultShader(true);
-    shader.bind()
+    gridShader = new DefaultShader(true);
+    gridShader.bind()
+        .setProjectionMatrix(camera.projectionMatrix)
+        .setTexture(tex_black)
+        .unbind();
+
+    pointShader = new DefaultShader(true);
+    pointShader.bind()
+        .setProjectionMatrix(camera.projectionMatrix)
+        .setTexture(tex_black)
+        .unbind();
+
+    quadShader = new DefaultShader(true);
+    quadShader.bind()
         .setProjectionMatrix(camera.projectionMatrix)
         .setTexture(texture)
         .unbind();
 
     // Grid
     let radius = 4;
+    let radmax = radius*2;
     let verts = [];
+    let colors = [];
     for (let x = -radius; x <= radius; x++) {
         for (let y = -radius; y <= radius; y++) {
             verts.push(x / radius, y / radius, 0);
+            colors.push((x+radius) / radmax, (y+radius) / radmax, 1.0);
         }
     }
     let arrVerts = new Float32Array(verts);
-    let pointGridMesh = new Mesh("point_grid", 3, 2, null, arrVerts);
+    let arrColor = new Float32Array(colors);
+    let pointGridMesh = new Mesh("point_grid", 3, 2, null, arrVerts, null, null, arrColor);
 
     pointGridMesh.drawMode = gl.POINTS;
     pointGridModel = new Model(pointGridMesh)
@@ -149,7 +168,14 @@ function onRender(dt) {
         .preRender()
         .renderModel(skyboxModel);
 
-    shader.bind()
+    gridShader.bind()
+        .setTime(time)
+        .setCameraMatrix(camera.viewMatrix)
+        .setProjectionMatrix(camera.projectionMatrix)
+        .preRender()
+        .renderModel(gridModel.preRender());
+
+    pointShader.bind()
         .setTime(time)
         .setCameraMatrix(camera.viewMatrix)
         .setProjectionMatrix(camera.projectionMatrix)
@@ -157,10 +183,15 @@ function onRender(dt) {
         .setAngle(angle)
         .preRender()
         .renderModel(pointGridModel.preRender())
-        .renderModel(gridModel.preRender());
-    quadModels.forEach(quadModel => {
-        shader.renderModel(quadModel.preRender());
-    });
+
+    quadShader.bind()
+        .setTime(time)
+        .setCameraMatrix(camera.viewMatrix)
+        .setProjectionMatrix(camera.projectionMatrix)
+        .preRender()
+        quadModels.forEach(quadModel => {
+            quadShader.renderModel(quadModel.preRender());
+        });
 }
 
 class RenderLoop {
