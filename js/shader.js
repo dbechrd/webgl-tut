@@ -1,5 +1,5 @@
-import { gl } from "../globals.js"
-import { Model } from '../model.js'
+import { gl } from "./globals.js"
+import { Model } from './model.js'
 
 const ATTR_POSITION = { name: "attr_position", location: 0 };
 const ATTR_NORMAL   = { name: "attr_normal"  , location: 1 };

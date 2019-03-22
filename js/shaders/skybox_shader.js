@@ -1,6 +1,5 @@
 import { gl } from "../globals.js"
-import { Shader } from "./shader.js"
-import { Matrix4 } from "../math.js";
+import { Shader } from "../shader.js"
 
 class SkyboxShader extends Shader {
     /**
@@ -13,22 +12,7 @@ class SkyboxShader extends Shader {
         let vert = SkyboxShader.vert();
         let frag = SkyboxShader.frag();
         super(vert, frag, validate);
-
-        this.bind();
-        // this.uniformLoc.point_size = gl.getUniformLocation(this.program, "u_point_size");
-        // this.uniformLoc.angle      = gl.getUniformLocation(this.program, "u_angle");
-        this.unbind();
     }
-
-    // setPointSize(point_size) {
-    //     gl.uniform1f(this.uniformLoc.point_size, point_size);
-    //     return this;
-    // }
-
-    // setAngle(angle) {
-    //     gl.uniform1f(this.uniformLoc.angle, angle);
-    //     return this;
-    // }
 
     preRender() {
         gl.activeTexture(gl.TEXTURE0);

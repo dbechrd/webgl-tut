@@ -1,5 +1,5 @@
 import { gl } from "../globals.js"
-import { Shader } from "./shader.js"
+import { Shader } from "../shader.js"
 
 class DefaultShader extends Shader {
     /**

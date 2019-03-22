@@ -1,7 +1,7 @@
 import { gl, Globals } from "./globals.js"
 import { Mesh } from "./mesh.js"
 import { Model } from "./model.js"
-import { ATTR_POSITION, ATTR_NORMAL, ATTR_UV, ATTR_COLOR } from './shaders/shader.js'
+import { ATTR_POSITION, ATTR_NORMAL, ATTR_UV, ATTR_COLOR } from './shader.js'
 
 let Primitives = {};
 

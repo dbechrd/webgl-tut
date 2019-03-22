@@ -15,6 +15,7 @@ import { Camera, CameraController } from "./camera.js";
 import { gl, Globals } from "./globals.js";
 import { Texture } from "./texture.js";
 import { CubeMap } from "./cubemap.js";
+import { CubeMesh } from "./meshes/cube_mesh.js"
 
 /** @type {AudioContext} */
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -29,6 +30,7 @@ let quadShader;
 let pointGridModel;
 let gridModel;
 let quadModels = [];
+let cubeModel;
 /** @type {Camera} */
 let camera;
 let cameraCtrl;
@@ -117,6 +119,7 @@ window.addEventListener("load", function() {
         .setTexture(texture)
         .unbind();
 
+    ///////////////////////////////////////////////////////////////////
     // Grid
     let radius = 4;
     let radmax = radius*2;
@@ -137,9 +140,14 @@ window.addEventListener("load", function() {
         .setRotation(-60, 0, 30)
 
     gridModel = Primitives.GridAxis.createModel(true);
+    ///////////////////////////////////////////////////////////////////
 
     let quadModel = Primitives.Quad.createModel();
     quadModels.push(quadModel);
+
+    let cubeMesh = Mesh.parseObjText("cube_obj", CubeMesh.data());
+    cubeMesh.disableCull = true;
+    cubeModel = new Model(cubeMesh);
 
     let loop = new RenderLoop(onRender, 30);
     loop.start();
@@ -189,9 +197,10 @@ function onRender(dt) {
         .setCameraMatrix(camera.viewMatrix)
         .setProjectionMatrix(camera.projectionMatrix)
         .preRender()
-        quadModels.forEach(quadModel => {
-            quadShader.renderModel(quadModel.preRender());
-        });
+        // quadModels.forEach(quadModel => {
+        //     quadShader.renderModel(quadModel.preRender());
+        // });
+    quadShader.renderModel(cubeModel.preRender());
 }
 
 class RenderLoop {
