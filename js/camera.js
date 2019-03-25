@@ -10,7 +10,7 @@ class Camera {
      * @param {number} far- Far plane.
      */
     constructor(fov, near, far) {
-        this.updateProjectionMatrix();
+        this.updateProjectionMatrix(fov, near, far);
         this.transform = new Transform();
         this.viewMatrix = new Float32Array(16);
         this.mode = Camera.MODE_ORBIT;
@@ -51,12 +51,12 @@ class Camera {
         if (this.mode == Camera.MODE_FREE) {
             this.transform.matView.reset()
                 .vtranslate(this.transform.position)
-                .rotateX(this.transform.rotation.x * Transform.deg2rad)
-                .rotateY(this.transform.rotation.y * Transform.deg2rad);
+                .rotateY(this.transform.rotation.y * Transform.deg2rad)
+                .rotateX(this.transform.rotation.x * Transform.deg2rad);
         } else {
             this.transform.matView.reset()
-                .rotateX(this.transform.rotation.x * Transform.deg2rad)
                 .rotateY(this.transform.rotation.y * Transform.deg2rad)
+                .rotateX(this.transform.rotation.x * Transform.deg2rad)
                 .vtranslate(this.transform.position);
         }
 

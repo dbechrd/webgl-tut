@@ -48,7 +48,11 @@ class DefaultShader extends Shader {
 
         void main(void) {
             gl_PointSize = u_point_size;
-            gl_Position = u_projection_matrix * u_camera_matrix * u_model_matrix * vec4(attr_position, 1.0);
+            vec3 pos = attr_position;
+            pos.x += pos.y * sin(u_time*0.0023) * 0.05;
+            pos.y += pos.z * cos(u_time*0.0031) * 0.09;
+            pos.z += pos.x * sin(u_time*0.0047) * 0.03;
+            gl_Position = u_projection_matrix * u_camera_matrix * u_model_matrix * vec4(pos, 1.0);
             vert_uv = attr_uv;
             vert_color = attr_color;
         }`;

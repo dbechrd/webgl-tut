@@ -80,7 +80,7 @@ window.addEventListener("load", function() {
     }
 
     camera = new Camera(45, 0.1, 1000);
-    camera.transform.position.set(0, 0.5, 3);
+    camera.transform.position.set(0, 0, 3);
     cameraCtrl = new CameraController(camera);
 
     let texture = new Texture("texture1", document.getElementById("texture1"));
@@ -148,7 +148,7 @@ window.addEventListener("load", function() {
     let cubeMesh = Mesh.parseObjText("cube_obj", CubeMesh.data());
     cubeMesh.disableCull = true;
     cubeModel = new Model(cubeMesh)
-        .setScale(3.0, 3.0, 3.0);
+        .setScale(5.0, 5.0, 5.0);
 
     let loop = new RenderLoop(onRender, 30);
     loop.start();
